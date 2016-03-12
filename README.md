@@ -5,24 +5,25 @@ as well as [this paper](http://dualec.org/DualECTLS.pdf).
 
 ## Usage
 ### Requirements
-This code requires the `ecdsa` packeage - `$ pip install ecdsa`.
+This code requires the `ecdsa` package - `$ pip install ecdsa`.
 
 ### Run
 To run do `python dualec.py`. For verbose output `python dualec.py -v`
 
 ## Structure
 ### `dualec.py`
+*Forthcoming...*
 
 ### `mathutil.py`
-#### `mod_inv(n, mod)`
+##### `mod_inv(n, mod)`
 Compute the modular inverse of n % mod, in other words, find m such that
 1 = (m * n) % mod.
 
-#### `kronecker(a, b)`
+##### `kronecker(a, b)`
 Compute the Kronecker symbol of a % b. If b is prime this is the Legendre symbol
 of a % b, and will return 1 if a is a quadratic residue.
 
-#### `modsqrt(n, p)`
+##### `modsqrt(n, p)`
 Compute the square root of n % p, in other words, find m such that m * m % p =
 n % p.
 
