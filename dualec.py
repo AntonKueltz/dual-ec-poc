@@ -60,7 +60,7 @@ def gen_prediction(observed, Q, d):
             r = (s * Q).x() & (2**(8 * 30) - 1)
 
             if VERBOSE:
-                stdout.write('Checking: %x (%x vs %x)   \r' % (guess, checkbits, (r >> (8 * 28))))
+                stdout.write('Checking: %x (%x vs %x)   \r' % (high_bits, checkbits, (r >> (8 * 28))))
                 stdout.flush()
 
             # check the first 2 bytes against the observed bytes
