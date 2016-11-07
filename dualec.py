@@ -1,8 +1,7 @@
 from random import randint
 from sys import argv, stdout
 
-from ecdsa import NIST256p as p256
-from ecdsa.ellipticcurve import Point
+from fastecdsa.curve import P256
 
 from mathutil import kronecker, modsqrt, mod_inv
 
@@ -11,23 +10,18 @@ VERBOSE = False
 
 def sanity_check(P, Q, d):
     # we now have P = dQ (the backdoor)
-    assert((d * Q).x() == P.x())
-    assert((d * Q).y() == P.y())
-
-    i = 0xabadfade
-    iQ, iP = i * Q, i * P
-    assert((d * iQ).x() == iP.x())
+    assert(P256.point_mul(Q, d) == P)
 
 
 def gen_backdoor():
-    P = p256.generator  # dual EC says set P to P256 base point
-    d = randint(2, p256.curve.p())  # pick a number that is in the field P256 is over
-    e = mod_inv(d, P.order())  # find inverse of the number in the field of the base points order
-    Q = P * e  # note that mult operator is overriden, this is multiplication on P256
+    P = P256.G  # dual EC says set P to P256 base point
+    d = randint(2, P256.p)  # pick a number that is in the field P256 is over
+    e = mod_inv(d, P256.q)  # find inverse of the number in the field of the base points order
+    Q = P256.point_mul(P, e)  # note that mult operator is overriden, this is multiplication on P256
 
     if VERBOSE:
-        print 'P = ({:x}, {:x})'.format(P.x(), P.y())
-        print 'Q = ({:x}, {:x})'.format(Q.x(), Q.y())
+        print 'P = ({:x}, {:x})'.format(P[0], P[1])
+        print 'Q = ({:x}, {:x})'.format(Q[0], Q[1])
         print 'd = {:x}'.format(d)
 
     sanity_check(P, Q, d)
@@ -36,12 +30,12 @@ def gen_backdoor():
 
 def find_point_on_p256(x):
     # equation: y^2 = x^3-3x+41058363725152142129326129780047268409114441015993725554835256314039467401291
-    y2 = (x * x * x) - (3 * x) + 41058363725152142129326129780047268409114441015993725554835256314039467401291
-    y2 = y2 % p256.curve.p()
-    has_root = (kronecker(y2, p256.curve.p()) == 1)
+    y2 = (x * x * x) - (3 * x) + P256.b
+    y2 = y2 % P256.p
+    has_root = (kronecker(y2, P256.p) == 1)
 
     if has_root:
-        return True, modsqrt(y2, p256.curve.p())
+        return True, modsqrt(y2, P256.p)
     else:
         return False, None
 
@@ -55,9 +49,10 @@ def gen_prediction(observed, Q, d):
 
         if on_curve:
             # use the backdoor to guess the next 30 bytes
-            point = Point(p256.curve, guess, y)
-            s = (d * point).x()
-            r = (s * Q).x() & (2**(8 * 30) - 1)
+            # point = Point(p256.curve, guess, y)
+            point = (guess, y)
+            s = P256.point_mul(point, d)[0]
+            r = (P256.point_mul(Q, s)[0]) & (2**(8 * 30) - 1)
 
             if VERBOSE:
                 stdout.write('Checking: %x (%x vs %x)   \r' % (high_bits, checkbits, (r >> (8 * 28))))
@@ -83,16 +78,13 @@ class DualEC():
 
     def genbits(self):
         t = self.seed
-        s = (t * self.P).x()
+        s = P256.point_mul(self.P, t)[0]
         self.seed = s
-        r = (s * self.Q).x()
+        r = P256.point_mul(self.Q, s)[0]
         return r & (2**(8 * 30) - 1)  # return 30 bytes
 
 
-if __name__ == '__main__':
-    if len(argv) == 2 and argv[1] == '-v':
-        VERBOSE = True
-
+def main():
     P, Q, d = gen_backdoor()
     # seed is some random val from /dev/urandom
     dualec = DualEC(0x1fc95c3714652fe2, P, Q)
@@ -107,3 +99,19 @@ if __name__ == '__main__':
 
     actual = bits2 & (2**(8 * 28) - 1)
     print 'Actual 28 bytes:\n{:x}'.format(actual)
+
+
+if __name__ == '__main__':
+    if len(argv) == 2 and argv[1] == '-v':
+        VERBOSE = True
+
+    main()
+    '''
+    Q = (
+        0xd19761748936051e5fb436f5c383a2ca6fbd1e61f227a3d70f44d73311781b32,
+        0xdc4c729f6de383957f62d1318197757cd2015ae6f27066ef9990fcf6d4319d82
+    )
+    d = 0x561021d34971c6b5da29dbefb21413a469a751356392133a4a78981fb51f3a01
+    observed = 0x8fc4b1d886a3ac3d3ae3c13722bc5eead9d1dd5eda876ca59b8c33ebeb6e2616
+    print'Prediction: {:x}'.format(gen_prediction(observed, Q, d))
+    '''
