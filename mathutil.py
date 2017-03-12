@@ -23,82 +23,21 @@ def mod_inv(n, mod):
         return t
 
 
-# kronecker is the legendre symbol when b is prime
-def kronecker(a, b):
-    if b == 0:
-        if a == 1 or a == -1:
-            return 1
-        else:
-            return 0
-
-    if a & 1 == 0 and b & 1 == 0:
-        return 0
-
-    v = 0
-
-    while b & 1 == 0:
-        v += 1
-        b /= 2
-
-    if v & 1 == 0:
-        k = 1
-    else:
-        k = (-1) ** ((a * a - 1) / 8)
-
-    if b < 0:
-        b = -b
-
-        if a < 0:
-            k = -k
-
-    while a != 0:
-        v = 0
-
-        while a & 1 == 0:
-            v += 1
-            a /= 2
-
-        if v & 1 == 1:
-            k = (-1) ** ((b * b - 1) / 8) * k
-
-        k = (-1) ** ((a - 1) * (b - 1) / 4) * k
-        r = abs(a)
-        a = b % r
-        b = r
-
-    return 0 if b > 1 else k
-
-
-def modsqrt(n, p):
-    S, q = 0, p - 1
-
-    while q % 2 == 0:
-        S += 1
-        q /= 2
-
-    Q = (p - 1) / (2 ** S)
-
-    z = randint(1, p)
-    while kronecker(z, p) != -1:
-        z = randint(1, p)
-
-    c = pow(z, Q, p)
-    R = pow(n, (Q + 1) / 2, p)
-    t = pow(n, Q, p)
-    M = S
-
-    while t != 1:
-        i, exp = 1, 2
-
-        while pow(t, exp, p) != 1:
-            i += 1
-            exp = 2 ** i
-
-        exp = 2 ** (M - i - 1)
-        b = pow(c, exp, p)
-        R = (R * b) % p
-        t = (t * b * b) % p
-        c = (b * b) % p
-        M = i
-
-    return R
+def p256_mod_sqrt(c):
+    # only works for field P256 is over
+    p = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+    t1 = pow(c, 2, p)
+    t1 = (t1 * c) % p
+    t2 = pow(t1, 2**2, p)
+    t2 = (t2 * t1) % p
+    t3 = pow(t2, 2**4, p)
+    t3 = (t3 * t2) % p
+    t4 = pow(t3, 2**8, p)
+    t4 = (t4 * t3) % p
+    r = pow(t4, 2**16, p)
+    r = (r * t4) % p
+    r = pow(r, 2**32, p)
+    r = (r * c) % p
+    r = pow(r, 2**96, p)
+    r = (r * c) % p
+    return pow(r, 2**94, p)

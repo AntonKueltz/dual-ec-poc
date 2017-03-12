@@ -5,7 +5,7 @@ as well as [this paper](http://dualec.org/DualECTLS.pdf).
 
 ## Usage
 ### Requirements
-This code requires the `fastecdsa` package - `$ pip install fastecdsa`.
+This code requires the `fastecdsa` package v1.4.1 or higher - `$ pip install fastecdsa`.
 
 ### Run
 To run do `python dualec.py`. For verbose output `python dualec.py -v`
