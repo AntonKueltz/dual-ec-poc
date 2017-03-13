@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import argparse
 from random import randint
 from sys import argv, stdout
@@ -24,9 +25,9 @@ def gen_backdoor():
     Q = e * P  # note that mult operator is overriden, this is multiplication on P256
 
     if VERBOSE:
-        print 'P = ({:x}, {:x})'.format(P.x, P.y)
-        print 'Q = ({:x}, {:x})'.format(Q.x, Q.y)
-        print 'd = {:x}'.format(d)
+        print('P = ({:x}, {:x})'.format(P.x, P.y))
+        print('Q = ({:x}, {:x})'.format(Q.x, Q.y))
+        print('d = {:x}'.format(d))
 
     sanity_check(P, Q, d)
     return P, Q, d
@@ -93,13 +94,13 @@ def main():
     bits2 = dualec.genbits()
 
     observed = (bits1 << (2 * 8)) | (bits2 >> (28 * 8))
-    print 'Observed 32 bytes:\n{:x}'.format(observed)
+    print('Observed 32 bytes:\n{:x}'.format(observed))
 
     predicted = gen_prediction(observed, Q, d)
-    print 'Predicted 28 bytes:\n{:x}'.format(predicted)
+    print('Predicted 28 bytes:\n{:x}'.format(predicted))
 
     actual = bits2 & (2**(8 * 28) - 1)
-    print 'Actual 28 bytes:\n{:x}'.format(actual)
+    print('Actual 28 bytes:\n{:x}'.format(actual))
 
 
 if __name__ == '__main__':

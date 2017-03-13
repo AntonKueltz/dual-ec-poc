@@ -1,26 +1,17 @@
-from random import randint
-
-
-def mod_inv(n, mod):
-    n = n % mod
-    t, newt = 0, 1
-    r, newr = mod, n
-
-    while newr != 0:
-        q = r / newr
-        tmp1, tmp2 = t, r
-
-        t = newt
-        newt = tmp1 - q * newt
-        r = newr
-        newr = tmp2 - q * newr
-
-    if r > 1:
-        return 0
-    elif t < 0:
-        return t + mod
+def egcd(a, b):
+    if a == 0:
+        return (b, 0, 1)
     else:
-        return t
+        g, y, x = egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+
+def mod_inv(a, m):
+    g, x, y = egcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
 
 
 def p256_mod_sqrt(c):
