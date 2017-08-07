@@ -1,17 +1,6 @@
-def egcd(a, b):
-    if a == 0:
-        return (b, 0, 1)
-    else:
-        g, y, x = egcd(b % a, a)
-        return (g, x - (b // a) * y, y)
-
-
 def mod_inv(a, m):
-    g, x, y = egcd(a, m)
-    if g != 1:
-        raise Exception('modular inverse does not exist')
-    else:
-        return x % m
+    # only works if m is prime (due to Euler's Theorem)
+    return pow(a, m-2, m)
 
 
 def p256_mod_sqrt(c):
