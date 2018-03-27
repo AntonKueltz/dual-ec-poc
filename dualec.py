@@ -20,7 +20,7 @@ def sanity_check(P, Q, d):
 
 def gen_backdoor():
     P = P256.G  # dual EC says set P to P256 base point
-    d = randint(2, P256.p)  # pick a number that is in the field P256 is over
+    d = randint(2, P256.q)  # pick a number that is in the field P256 is over
     e = mod_inv(d, P256.q)  # find inverse of the number in the field of the base points order
     Q = e * P  # note that mult operator is overriden, this is multiplication on P256
 
